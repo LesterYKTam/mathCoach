@@ -1,0 +1,95 @@
+// Math Coach — Prisma schema
+// Docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ------------------------------------------------------------------
+// Enums
+// ------------------------------------------------------------------
+
+enum Role {
+  COACH
+  STUDENT
+}
+
+// ------------------------------------------------------------------
+// Models
+// ------------------------------------------------------------------
+
+model Profile {
+  id        String   @id @default(cuid())
+  name      String
+  role      Role
+  /// null = this IS the coach; set to coach Profile.id if this is a student
+  coachId   String?
+  createdAt DateTime @default(now())
+
+  // Relations — coach owns students; both can create/be-assigned tasks
+  coach            Profile?  @relation("CoachStudents", fields: [coachId], references: [id])
+  students         Profile[] @relation("CoachStudents")
+  createdTasks     Task[]    @relation("TaskCreator")
+  assignedTasks    Task[]    @relation("TaskAssignee")
+  attempts         Attempt[]
+}
+
+model Task {
+  id           String   @id @default(cuid())
+  title        String
+  creatorId    String
+  /// null = student created the task for themselves (no explicit assignment)
+  assignedToId String?
+  isActive     Boolean  @default(true)
+  /// 'multiplication' (Phase 1 only)
+  taskType     String
+  /// seconds
+  timeLimit    Int
+  passScore    Int
+  goodScore    Int
+  masterScore  Int
+  /// Array of { id, operand1, operand2, answer }
+  questions    String   // JSON stored as text (SQLite has no native JSON type)
+  /// Task-type-specific config — see dev_plan.md for shape
+  config       String   // JSON stored as text
+  createdAt    DateTime @default(now())
+
+  creator    Profile   @relation("TaskCreator",  fields: [creatorId],    references: [id])
+  assignedTo Profile?  @relation("TaskAssignee", fields: [assignedToId], references: [id])
+  attempts   Attempt[]
+}
+
+model Attempt {
+  id          String    @id @default(cuid())
+  taskId      String
+  studentId   String
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  /// seconds; null if abandoned
+  timeTaken   Int?
+  /// number correct; null if abandoned
+  score       Int?
+  /// 'fail' | 'pass' | 'good' | 'master'; null if abandoned
+  grade       String?
+
+  task    Task            @relation(fields: [taskId],    references: [id])
+  student Profile         @relation(fields: [studentId], references: [id])
+  answers AttemptAnswer[]
+}
+
+model AttemptAnswer {
+  id            String  @id @default(cuid())
+  attemptId     String
+  /// index into Task.questions array
+  questionIndex Int
+  /// null if the question was skipped
+  userAnswer    Int?
+  isCorrect     Boolean
+
+  attempt Attempt @relation(fields: [attemptId], references: [id])
+}

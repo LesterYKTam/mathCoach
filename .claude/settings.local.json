@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:www.math-aids.com)",
+      "Bash(npx create-next-app:*)",
+      "Bash(npx create-next-app@14:*)",
+      "Bash(npm install:*)",
+      "Bash(npx prisma init:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(npx prisma generate:*)",
+      "Bash(npx prisma db seed:*)",
+      "Bash(node -e:*)",
+      "Bash(npx tsx:*)",
+      "Bash(node:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(echo:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(cmd /c \"taskkill /PID 68588 /F\")",
+      "Bash(cmd /c \"taskkill /PID 68588 /F 2>&1\")",
+      "Bash(powershell -Command \"Stop-Process -Id 68588 -Force -ErrorAction SilentlyContinue; Start-Sleep 1; netstat -ano | Select-String '':3002''\")",
+      "Bash(powershell -Command \"netstat -ano | Select-String '':3002''\")",
+      "Bash(git init:*)",
+      "Bash(git add:*)"
+    ]
+  }
+}
