@@ -167,6 +167,10 @@ isCorrect     Boolean
 - TypeScript clean: `npx tsc --noEmit` → EXIT:0.
 - Dev server: `node ./node_modules/next/dist/bin/next dev --port 3002` (or via `.claude/launch.json`).
 - Seed: `node prisma/seed.mjs` → Coach + Alice + Bob.
+- **Phase 1 test suite** (2026-02-22): 2 files, **34 tests — all passed** ✅
+  - `src/__tests__/lib/questionEngine.test.ts` — 26 tests (shuffleArray, generateMultiplicationQuestions, shuffleQuestions, gradeAttempt)
+  - `src/__tests__/lib/logger.test.ts` — 8 tests (format, level filtering, stderr routing)
+  - Runner: Vitest (`npm test`)
 
 ---
 
