@@ -46,7 +46,7 @@ export default function AttemptClient({
   useEffect(() => { answersRef.current = answers; }, [answers]);
 
   // ── Submit (called by button or auto-submit in test mode)
-  const handleSubmit = useCallback(async (auto = false) => {
+  const handleSubmit = useCallback(async (_auto = false) => {
     if (isSubmittingRef.current || result) return;
     if (timerRef.current) clearInterval(timerRef.current);
     isSubmittingRef.current = true;
