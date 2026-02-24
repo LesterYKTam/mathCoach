@@ -18,7 +18,7 @@ interface TaskCreationFormProps {
   students?: StudentOption[];
 }
 
-const QUESTION_COUNT_PRESETS = [25, 60, 100];
+const QUESTION_COUNT_PRESETS = [30, 60, 90];
 const DEFAULT_COUNT = 60;
 const DEFAULT_TIME = 600; // 10 minutes in seconds
 
@@ -33,10 +33,10 @@ export default function TaskCreationForm({
 }: TaskCreationFormProps) {
   // ── Grid selection
   const [selected, setSelected] = useState<Set<string>>(() => {
-    // Default: all 1–9 × 1–9 facts
+    // Default: all 1–15 × 1–15 facts
     const s = new Set<string>();
-    for (let a = 1; a <= 9; a++)
-      for (let b = 1; b <= 9; b++)
+    for (let a = 1; a <= 15; a++)
+      for (let b = 1; b <= 15; b++)
         s.add(`${a},${b}`);
     return s;
   });
@@ -50,14 +50,16 @@ export default function TaskCreationForm({
   const [goodScore, setGoodScore] = useState(Math.round(DEFAULT_COUNT * 0.9));
   const [masterScore, setMasterScore] = useState(DEFAULT_COUNT);
   const [title, setTitle] = useState("");
-  const [assignedToId, setAssignedToId] = useState<string>(
-    creatorRole === "COACH" && students.length > 0 ? students[0].id : ""
+  // Coach multi-assign: set of selected student IDs
+  const [assignedToIds, setAssignedToIds] = useState<Set<string>>(
+    () => new Set(creatorRole === "COACH" ? students.map((s) => s.id) : [])
   );
 
   // ── Generated questions (preview)
   const [questions, setQuestions] = useState<Question[]>(() => {
+    // Initialise with all 1–15 × 1–15 facts (225 total)
     const facts = selectedToFacts(new Set(
-      Array.from({ length: 81 }, (_, i) => `${Math.floor(i / 9) + 1},${(i % 9) + 1}`)
+      Array.from({ length: 225 }, (_, i) => `${Math.floor(i / 15) + 1},${(i % 15) + 1}`)
     ));
     return generateMultiplicationQuestions(facts, DEFAULT_COUNT);
   });
@@ -102,7 +104,7 @@ export default function TaskCreationForm({
         await createTask({
           title,
           creatorId,
-          assignedToId: creatorRole === "COACH" && assignedToId ? assignedToId : null,
+          assignedToIds: creatorRole === "COACH" ? Array.from(assignedToIds) : [],
           timeLimit,
           passScore,
           goodScore,
@@ -147,21 +149,73 @@ export default function TaskCreationForm({
         />
       </div>
 
-      {/* Coach-only: assign to student */}
+      {/* Coach-only: assign to one or more students */}
       {creatorRole === "COACH" && students.length > 0 && (
         <div>
-          <label className="block text-sm font-medium text-neutral-300 mb-1">
-            Assign To
-          </label>
-          <select
-            value={assignedToId}
-            onChange={(e) => setAssignedToId(e.target.value)}
-            className="rounded bg-neutral-800 border border-neutral-700 px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-sky-600"
-          >
-            {students.map((s) => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
+          <div className="flex items-center gap-3 mb-2">
+            <label className="block text-sm font-medium text-neutral-300">
+              Assign To
+            </label>
+            {/* Quick-select helpers */}
+            <button
+              type="button"
+              onClick={() => setAssignedToIds(new Set(students.map((s) => s.id)))}
+              className="text-xs text-sky-400 hover:text-sky-300 transition-colors"
+            >
+              All
+            </button>
+            <span className="text-neutral-600 text-xs">·</span>
+            <button
+              type="button"
+              onClick={() => setAssignedToIds(new Set())}
+              className="text-xs text-neutral-400 hover:text-neutral-300 transition-colors"
+            >
+              None
+            </button>
+          </div>
+          <div className="flex flex-col gap-2">
+            {students.map((s) => {
+              const checked = assignedToIds.has(s.id);
+              return (
+                <label
+                  key={s.id}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
+                    checked
+                      ? "bg-sky-900/40 border-sky-700 text-white"
+                      : "bg-neutral-800 border-neutral-700 text-neutral-400 hover:border-neutral-600"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => {
+                      setAssignedToIds((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(s.id)) next.delete(s.id);
+                        else next.add(s.id);
+                        return next;
+                      });
+                    }}
+                    className="accent-sky-500 w-4 h-4"
+                  />
+                  <div className="w-7 h-7 rounded-full bg-sky-700 flex items-center justify-center text-xs font-bold text-white">
+                    {s.name[0].toUpperCase()}
+                  </div>
+                  <span className="text-sm font-medium">{s.name}</span>
+                </label>
+              );
+            })}
+          </div>
+          {assignedToIds.size === 0 && (
+            <p className="text-xs text-amber-400 mt-2">
+              No students selected — task will be saved without assignment.
+            </p>
+          )}
+          {assignedToIds.size > 1 && (
+            <p className="text-xs text-sky-400 mt-2">
+              {assignedToIds.size} students selected — one task copy per student.
+            </p>
+          )}
         </div>
       )}
 

@@ -8,7 +8,12 @@ import type { Fact, Question } from "@/lib/questionEngine";
 export interface CreateTaskPayload {
   title: string;
   creatorId: string;
-  assignedToId: string | null;
+  /**
+   * IDs of students to assign this task to.
+   * Coach: one task record is created per student (same questions/config, independent histories).
+   * Empty array or student role: creates a single unassigned (self-created) task.
+   */
+  assignedToIds: string[];
   timeLimit: number;       // seconds
   passScore: number;
   goodScore: number;
@@ -23,11 +28,13 @@ export interface CreateTaskPayload {
 
 /**
  * Persist a new task + its fixed question set to the database.
+ * When assignedToIds has multiple entries, one task record is created per student
+ * so each student gets an independent copy (own attempts, own deactivate).
  * Redirects to the creator's dashboard after saving.
  */
 export async function createTask(payload: CreateTaskPayload): Promise<void> {
   const {
-    title, creatorId, assignedToId,
+    title, creatorId, assignedToIds,
     timeLimit, passScore, goodScore, masterScore,
     questions, config,
   } = payload;
@@ -35,22 +42,33 @@ export async function createTask(payload: CreateTaskPayload): Promise<void> {
   if (!title.trim()) throw new Error("Task title is required");
   if (questions.length === 0) throw new Error("Task must have at least one question");
 
-  const task = await prisma.task.create({
-    data: {
-      title: title.trim(),
-      creatorId,
-      assignedToId,
-      taskType: "multiplication",
-      timeLimit,
-      passScore,
-      goodScore,
-      masterScore,
-      questions: JSON.stringify(questions),
-      config: JSON.stringify(config),
-    },
-  });
+  const questionsJson = JSON.stringify(questions);
+  const configJson    = JSON.stringify(config);
+  const titleTrimmed  = title.trim();
 
-  logger.prd(`Task created — id=${task.id}, creator=${creatorId}, assignedTo=${assignedToId ?? "self"}, questions=${questions.length}`);
+  if (assignedToIds.length === 0) {
+    // Self-created task (student role, or coach with no assignees selected)
+    const task = await prisma.task.create({
+      data: {
+        title: titleTrimmed, creatorId, assignedToId: null,
+        taskType: "multiplication", timeLimit, passScore, goodScore, masterScore,
+        questions: questionsJson, config: configJson,
+      },
+    });
+    logger.prd(`Task created — id=${task.id}, creator=${creatorId}, assignedTo=self, questions=${questions.length}`);
+  } else {
+    // Create one task record per assigned student (same content, independent records)
+    for (const studentId of assignedToIds) {
+      const task = await prisma.task.create({
+        data: {
+          title: titleTrimmed, creatorId, assignedToId: studentId,
+          taskType: "multiplication", timeLimit, passScore, goodScore, masterScore,
+          questions: questionsJson, config: configJson,
+        },
+      });
+      logger.prd(`Task created — id=${task.id}, creator=${creatorId}, assignedTo=${studentId}, questions=${questions.length}`);
+    }
+  }
 
   // Redirect to the appropriate dashboard
   const creator = await prisma.profile.findUnique({ where: { id: creatorId } });

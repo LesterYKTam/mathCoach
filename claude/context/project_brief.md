@@ -1,6 +1,6 @@
 # Math Coach — Project Brief
 
-_Last updated: 2026-02-21_
+_Last updated: 2026-02-22_
 
 ---
 
@@ -154,16 +154,21 @@ Accessible by both coach and student.
 
 ## Phases
 
-### Phase 1 — MVP (current)
+### Phase 1 — MVP (current) ✅ COMPLETE
 Full app structure with all flows (coach, student, reports), but **only one task type**:
-- **1×1 Multiplication Drill** — single-digit × single-digit (factors 0–9 or 1–9)
+- **Multiplication Drill** — factors 1–15 (15×15 grid, 225 facts)
 - UI modelled on math-aids.com Advanced Times Tables Drill:
-  - 10×10 (or 9×9) selection grid — click cells to choose which multiplication facts to include
+  - **15×15 selection grid** — click cells to choose which multiplication facts to include
   - Row/column quick-select buttons; Select All / Clear All
-  - Question count presets (25 / 60 / 100) or custom (20–100)
+  - Question count presets: **30 / 60 / 90**
   - Layout: vertical or horizontal question format
   - Questions randomly drawn from selected facts, fixed on save
   - Regenerate button before saving
+- **Coach can assign one task to multiple students** (independent task record per student)
+- **Train / Test mode** on attempt screen:
+  - Count-up timer (starts at 0:00)
+  - 🟡 Train: timer turns yellow at time limit, student may keep going
+  - 🔵 Test: worksheet auto-submits when time limit is reached
 
 ### Phase 2+ — Future
 - Additional task types (division, fractions, addition, subtraction, decimals, algebra)

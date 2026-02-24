@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "dotenv -e .env -- next dev -H 0.0.0.0",
+    "build": "dotenv -e .env -- next build",
+    "start": "dotenv -e .env -- next start",
     "lint": "next lint",
+    "postinstall": "prisma generate",
+    "vercel-build": "prisma migrate deploy && next build",
     "db:seed": "node prisma/seed.mjs",
     "db:migrate": "prisma migrate dev",
     "test": "vitest run",
@@ -16,9 +18,9 @@
     "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
   },
   "dependencies": {
-    "@prisma/adapter-better-sqlite3": "^7.4.1",
+    "@neondatabase/serverless": "^1.0.2",
+    "@prisma/adapter-neon": "^7.4.1",
     "@prisma/client": "^7.4.1",
-    "better-sqlite3": "^12.6.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.575.0",
@@ -28,15 +30,17 @@
     "react-dom": "^18",
     "recharts": "^3.7.0",
     "tailwind-merge": "^3.5.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "ws": "^8.19.0"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "@types/recharts": "^1.8.29",
+    "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^5.1.4",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
     "postcss": "^8",

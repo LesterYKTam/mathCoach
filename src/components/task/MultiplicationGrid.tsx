@@ -7,7 +7,8 @@ interface MultiplicationGridProps {
   onChange: (selected: Set<string>) => void;
 }
 
-const FACTORS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+const FACTORS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+const TOTAL_FACTS = FACTORS.length * FACTORS.length; // 225
 
 function factKey(a: number, b: number) {
   return `${a},${b}`;
@@ -18,8 +19,8 @@ export function selectedToFacts(selected: Set<string>): Fact[] {
 }
 
 /**
- * 10×10 multiplication fact selection grid.
- * Rows = first operand (0–9), columns = second operand (0–9).
+ * 15×15 multiplication fact selection grid.
+ * Rows = first operand (1–15), columns = second operand (1–15).
  * Includes row-select, column-select, Select All, Clear All.
  */
 export default function MultiplicationGrid({ selected, onChange }: MultiplicationGridProps) {
@@ -82,7 +83,7 @@ export default function MultiplicationGrid({ selected, onChange }: Multiplicatio
           Clear All
         </button>
         <span className="text-xs text-neutral-400 ml-2 self-center">
-          {selected.size} / 100 facts selected
+          {selected.size} / {TOTAL_FACTS} facts selected
         </span>
       </div>
 
@@ -95,11 +96,11 @@ export default function MultiplicationGrid({ selected, onChange }: Multiplicatio
               <th className="w-7 h-7" />
               {/* Column headers (second operand) with quick-select */}
               {FACTORS.map((b) => (
-                <th key={b} className="w-7 h-7 text-center">
+                <th key={b} className="w-8 h-7 text-center">
                   <button
                     type="button"
                     onClick={() => toggleCol(b)}
-                    className="w-full h-full font-bold text-neutral-400 hover:text-white rounded transition-colors"
+                    className="w-full h-full font-bold text-neutral-400 hover:text-white rounded transition-colors text-[10px]"
                     title={`Select column ×${b}`}
                   >
                     {b}
@@ -112,28 +113,28 @@ export default function MultiplicationGrid({ selected, onChange }: Multiplicatio
             {FACTORS.map((a) => (
               <tr key={a}>
                 {/* Row header (first operand) with quick-select */}
-                <td className="w-7 h-7 text-center">
+                <td className="w-8 h-7 text-center">
                   <button
                     type="button"
                     onClick={() => toggleRow(a)}
-                    className="w-full h-full font-bold text-neutral-400 hover:text-white rounded transition-colors"
+                    className="w-full h-full font-bold text-neutral-400 hover:text-white rounded transition-colors text-[10px]"
                     title={`Select row ${a}×`}
                   >
                     {a}
                   </button>
                 </td>
-                {/* Fact cells */}
+                {/* Fact cells — wider to fit 3-digit products (e.g. 225) */}
                 {FACTORS.map((b) => {
                   const key = factKey(a, b);
                   const isSelected = selected.has(key);
                   return (
-                    <td key={b} className="w-7 h-7 p-0.5">
+                    <td key={b} className="w-8 h-7 p-0.5">
                       <button
                         type="button"
                         onClick={() => toggle(a, b)}
                         title={`${a} × ${b} = ${a * b}`}
                         className={`
-                          w-full h-full rounded text-[10px] font-medium transition-colors
+                          w-full h-full rounded text-[9px] font-medium transition-colors
                           ${isSelected
                             ? "bg-sky-600 text-white hover:bg-sky-500"
                             : "bg-neutral-800 text-neutral-500 hover:bg-neutral-700 hover:text-neutral-300"

@@ -1,6 +1,6 @@
 # Math Coach — Dev Plan
 
-_Last updated: 2026-02-21_
+_Last updated: 2026-02-22_
 _Read alongside: `claude/context/project_brief.md` for full product context_
 
 ---
@@ -111,7 +111,7 @@ isCorrect     Boolean
 - [x] **Step 2 — Database schema** ✅
   - Prisma schema: Profile, Task, Attempt, AttemptAnswer
   - Migration applied; DB at `./dev.db`
-  - Seed: `node prisma/seed.mjs` → 1 coach (Coach) + 2 students (Alice, Bob)
+  - Seed: `node prisma/seed.mjs` → 1 coach (Coach) + 2 students (Ella, Nathan)
 
 - [x] **Step 3 — Profile picker screen (`/`)** ✅
   - Server Component fetches profiles; ProfileCard is a Client Component
@@ -124,9 +124,9 @@ isCorrect     Boolean
   - Unit-testable, pure functions, no DB dependency
 
 - [x] **Step 5 — Task creation UI** ✅
-  - `src/components/task/MultiplicationGrid.tsx` — 10×10 grid, row/col quick-select, Select All / Clear All
-  - `src/components/task/TaskCreationForm.tsx` — count presets + slider, layout toggle, thresholds, preview, Regenerate, Save
-  - `src/app/actions/tasks.ts` — `createTask` / `deactivateTask` server actions
+  - `src/components/task/MultiplicationGrid.tsx` — **1–15 × 1–15 grid** (225 facts), row/col quick-select, Select All / Clear All
+  - `src/components/task/TaskCreationForm.tsx` — question count presets **[30, 60, 90]**, layout toggle, thresholds, preview, Regenerate, Save; **multi-student checkbox assignment** (coach can assign same task to multiple students at once — one task record created per student)
+  - `src/app/actions/tasks.ts` — `createTask` (accepts `assignedToIds: string[]`) / `deactivateTask` server actions
 
 - [x] **Step 6 — Coach dashboard (`/coach`)** ✅
   - `src/app/coach/page.tsx` — student roster, tasks per student, deactivate, new task link
@@ -138,7 +138,7 @@ isCorrect     Boolean
 
 - [x] **Step 8 — Task attempt screen** ✅
   - `src/app/student/[studentId]/tasks/[taskId]/page.tsx` — server component loads task + questions
-  - `src/app/student/[studentId]/tasks/[taskId]/AttemptClient.tsx` — countdown timer, input grid, auto-submit, Enter-key focus progression
+  - `src/app/student/[studentId]/tasks/[taskId]/AttemptClient.tsx` — **Train/Test mode selection** pre-start screen; **count-up timer** (starts at 0:00); Train mode: turns yellow when time limit reached, student can keep going; Test mode: auto-submits at time limit; Enter-key focus progression; stale-closure-safe refs
 
 - [x] **Step 9 — Results screen** ✅
   - Embedded in `AttemptClient.tsx` — grade badge, score, time, per-question breakdown, Try Again / Back
@@ -165,12 +165,19 @@ isCorrect     Boolean
 
 - All 10 steps complete as of 2026-02-21.
 - TypeScript clean: `npx tsc --noEmit` → EXIT:0.
-- Dev server: `node ./node_modules/next/dist/bin/next dev --port 3002` (or via `.claude/launch.json`).
-- Seed: `node prisma/seed.mjs` → Coach + Alice + Bob.
+- Dev server: `node ./node_modules/next/dist/bin/next dev --port 3002 --hostname 0.0.0.0` (or via `.claude/launch.json`). Accessible on LAN at `http://192.168.50.108:3002`.
+- Seed: `node prisma/seed.mjs` → Coach + **Ella + Nathan** (re-seeded 2026-02-22).
 - **Phase 1 test suite** (2026-02-22): 2 files, **34 tests — all passed** ✅
   - `src/__tests__/lib/questionEngine.test.ts` — 26 tests (shuffleArray, generateMultiplicationQuestions, shuffleQuestions, gradeAttempt)
   - `src/__tests__/lib/logger.test.ts` — 8 tests (format, level filtering, stderr routing)
   - Runner: Vitest (`npm test`)
+- **GitHub repo**: https://github.com/LesterYKTam/mathCoach
+- **Post-Phase 1 enhancements** (2026-02-22):
+  - Multi-student task assignment (coach can assign one task to multiple students)
+  - Multiplication grid expanded from 1–9 to **1–15** (225 facts)
+  - Question count presets changed to **30 / 60 / 90**
+  - Train/Test mode added to attempt screen with count-up timer
+  - LAN access enabled: server binds to 0.0.0.0; Windows Firewall rule `AllowPingIn` added for ICMP
 
 ---
 

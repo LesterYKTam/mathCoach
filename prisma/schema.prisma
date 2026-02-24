@@ -7,7 +7,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  // Prisma 7: url is configured in prisma.config.ts, not here
+  provider = "postgresql"
 }
 
 // ------------------------------------------------------------------
@@ -53,10 +54,10 @@ model Task {
   passScore    Int
   goodScore    Int
   masterScore  Int
-  /// Array of { id, operand1, operand2, answer }
-  questions    String   // JSON stored as text (SQLite has no native JSON type)
-  /// Task-type-specific config — see dev_plan.md for shape
-  config       String   // JSON stored as text
+  /// Array of { id, operand1, operand2, answer } — stored as TEXT, app handles JSON.parse/stringify
+  questions    String
+  /// Task-type-specific config — see dev_plan.md for shape — stored as TEXT
+  config       String
   createdAt    DateTime @default(now())
 
   creator    Profile   @relation("TaskCreator",  fields: [creatorId],    references: [id])

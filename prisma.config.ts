@@ -10,6 +10,7 @@ export default defineConfig({
     seed: "node prisma/seed.mjs",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Migrations need the direct (non-pooled) connection; runtime uses PrismaNeon adapter via db.ts
+    url: process.env["DIRECT_URL"],
   },
 });
