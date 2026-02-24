@@ -1,6 +1,6 @@
 # Math Coach — Dev Plan
 
-_Last updated: 2026-02-22_
+_Last updated: 2026-02-23_
 _Read alongside: `claude/context/project_brief.md` for full product context_
 
 ---
@@ -8,8 +8,12 @@ _Read alongside: `claude/context/project_brief.md` for full product context_
 ## Status
 
 **Phase 1 — COMPLETE ✅**
-All 10 steps finished. TypeScript clean (`tsc --noEmit` exits 0).
-Next: end-to-end manual test, then Phase 2 planning.
+All 10 steps finished. TypeScript clean. Tests passing (34/34).
+
+**Infrastructure — COMPLETE ✅** (2026-02-23)
+Neon PostgreSQL, Vercel deploy, GitHub → Vercel auto-deploy pipeline all live.
+
+Next: Phase 2 planning (additional task types).
 
 ---
 
@@ -19,9 +23,22 @@ Next: end-to-end manual test, then Phase 2 planning.
 |-------|--------|
 | Framework | Next.js 14 (App Router) |
 | Styling | Tailwind CSS + shadcn/ui |
-| Database | SQLite + Prisma ORM |
+| Database | Neon (serverless PostgreSQL) + Prisma 7 ORM |
 | Charts | Recharts |
 | Runtime | Node.js |
+
+---
+
+## Infrastructure
+
+| Component | Service | Details |
+|-----------|---------|---------|
+| App | Vercel | Next.js standalone; `vercel.json` sets `buildCommand: npm run vercel-build` |
+| Database | Neon (serverless Postgres) | `DATABASE_URL` (pooled) + `DIRECT_URL` (direct, for migrations) |
+| Deploy | git push origin main | Vercel auto-deploys; runs `prisma migrate deploy && next build` |
+| Local dev | `npm run dev` + Neon or Docker | `docker-compose.yml` provides Postgres 16 at localhost:5432 |
+
+**Key config files:** `vercel.json`, `docker-compose.yml`, `Dockerfile`, `prisma.config.ts`, `.env`
 
 ---
 
@@ -48,8 +65,8 @@ timeLimit       Int      // seconds
 passScore       Int      // minimum correct answers for Pass
 goodScore       Int      // minimum correct answers for Good
 masterScore     Int      // minimum correct answers for Master
-questions       Json     // Array of { id, operand1, operand2, answer }
-config          Json     // Task-type-specific config (see below)
+questions       String   // JSON stored as TEXT: Array of { id, operand1, operand2, answer }
+config          String   // JSON stored as TEXT: task-type-specific config (see below)
 createdAt       DateTime
 ```
 
@@ -104,51 +121,15 @@ isCorrect     Boolean
 ## Build Order (Phase 1)
 
 - [x] **Step 1 — Project setup** ✅
-  - Next.js 14, TypeScript, Tailwind, App Router, shadcn/ui, Recharts
-  - Prisma 7 with better-sqlite3 adapter (see MEMORY.md for adapter gotcha)
-  - `src/lib/logger.ts` — DEV/TEST/PRD logger
-
 - [x] **Step 2 — Database schema** ✅
-  - Prisma schema: Profile, Task, Attempt, AttemptAnswer
-  - Migration applied; DB at `./dev.db`
-  - Seed: `node prisma/seed.mjs` → 1 coach (Coach) + 2 students (Ella, Nathan)
-
 - [x] **Step 3 — Profile picker screen (`/`)** ✅
-  - Server Component fetches profiles; ProfileCard is a Client Component
-  - Cookie-based session (`profileId`, `profileRole`); navigates to /coach or /student/[id]
-
 - [x] **Step 4 — Question engine (`lib/questionEngine.ts`)** ✅
-  - `generateMultiplicationQuestions(selectedFacts, count)` — randomly draw from selected [a,b] pairs
-  - `shuffleQuestions(questions)` — Fisher-Yates shuffle
-  - `gradeAttempt(questions, answers)` — return score + grade tier
-  - Unit-testable, pure functions, no DB dependency
-
 - [x] **Step 5 — Task creation UI** ✅
-  - `src/components/task/MultiplicationGrid.tsx` — **1–15 × 1–15 grid** (225 facts), row/col quick-select, Select All / Clear All
-  - `src/components/task/TaskCreationForm.tsx` — question count presets **[30, 60, 90]**, layout toggle, thresholds, preview, Regenerate, Save; **multi-student checkbox assignment** (coach can assign same task to multiple students at once — one task record created per student)
-  - `src/app/actions/tasks.ts` — `createTask` (accepts `assignedToIds: string[]`) / `deactivateTask` server actions
-
 - [x] **Step 6 — Coach dashboard (`/coach`)** ✅
-  - `src/app/coach/page.tsx` — student roster, tasks per student, deactivate, new task link
-  - `src/app/coach/tasks/new/page.tsx` — task creation page (passes `assignTo` query param)
-
 - [x] **Step 7 — Student dashboard (`/student/[studentId]`)** ✅
-  - `src/app/student/[studentId]/page.tsx` — assigned + self-created tasks, Create My Own Task button
-  - `src/app/student/[studentId]/tasks/new/page.tsx` — student task creation
-
 - [x] **Step 8 — Task attempt screen** ✅
-  - `src/app/student/[studentId]/tasks/[taskId]/page.tsx` — server component loads task + questions
-  - `src/app/student/[studentId]/tasks/[taskId]/AttemptClient.tsx` — **Train/Test mode selection** pre-start screen; **count-up timer** (starts at 0:00); Train mode: turns yellow when time limit reached, student can keep going; Test mode: auto-submits at time limit; Enter-key focus progression; stale-closure-safe refs
-
 - [x] **Step 9 — Results screen** ✅
-  - Embedded in `AttemptClient.tsx` — grade badge, score, time, per-question breakdown, Try Again / Back
-  - `src/app/actions/attempts.ts` — `submitAttempt` server action
-
 - [x] **Step 10 — Report module** ✅
-  - `src/components/ScoreTrendChart.tsx` — Recharts line chart with Pass/Good/Master reference lines
-  - `src/components/ReportView.tsx` — server component: chart + attempt history table per task
-  - `src/app/coach/reports/[studentId]/page.tsx` — coach report (verifies cookie)
-  - `src/app/student/[studentId]/reports/page.tsx` — student report
 
 ---
 
@@ -163,25 +144,34 @@ isCorrect     Boolean
 
 ## Completed Work
 
-- All 10 steps complete as of 2026-02-21.
+### Phase 1 (2026-02-21 – 2026-02-22)
+- All 10 steps complete.
 - TypeScript clean: `npx tsc --noEmit` → EXIT:0.
-- Dev server: `node ./node_modules/next/dist/bin/next dev --port 3002 --hostname 0.0.0.0` (or via `.claude/launch.json`). Accessible on LAN at `http://192.168.50.108:3002`.
-- Seed: `node prisma/seed.mjs` → Coach + **Ella + Nathan** (re-seeded 2026-02-22).
-- **Phase 1 test suite** (2026-02-22): 2 files, **34 tests — all passed** ✅
-  - `src/__tests__/lib/questionEngine.test.ts` — 26 tests (shuffleArray, generateMultiplicationQuestions, shuffleQuestions, gradeAttempt)
-  - `src/__tests__/lib/logger.test.ts` — 8 tests (format, level filtering, stderr routing)
-  - Runner: Vitest (`npm test`)
-- **GitHub repo**: https://github.com/LesterYKTam/mathCoach
-- **Post-Phase 1 enhancements** (2026-02-22):
-  - Multi-student task assignment (coach can assign one task to multiple students)
-  - Multiplication grid expanded from 1–9 to **1–15** (225 facts)
-  - Question count presets changed to **30 / 60 / 90**
-  - Train/Test mode added to attempt screen with count-up timer
-  - LAN access enabled: server binds to 0.0.0.0; Windows Firewall rule `AllowPingIn` added for ICMP
+- **Phase 1 test suite**: 2 files, **34 tests — all passed** ✅
+  - `src/__tests__/lib/questionEngine.test.ts` — 26 tests
+  - `src/__tests__/lib/logger.test.ts` — 8 tests
+- Post-Phase 1 enhancements:
+  - Multi-student task assignment
+  - Multiplication grid expanded 1–9 → **1–15** (225 facts)
+  - Question count presets: **30 / 60 / 90**
+  - Train/Test mode with count-up timer
+
+### Infrastructure (2026-02-23)
+- **Migrated database:** SQLite → Neon serverless PostgreSQL
+- **Prisma 7 lessons learned:**
+  - `schema.prisma` datasource: `provider` only — NO `url`/`directUrl`
+  - `prisma.config.ts`: `url = DIRECT_URL` (direct connection for migrations)
+  - `PrismaNeon` v7 API: pass `{ connectionString }` config object — NOT a `Pool` instance
+  - `ws` polyfill: conditional on `typeof WebSocket === "undefined"` (skip on Node 24+)
+- **Vercel deploy pipeline:** `git push origin main` → auto-deploy
+  - `postinstall: prisma generate` (generates `src/generated/prisma/`, gitignored)
+  - `vercel-build: prisma migrate deploy && next build`
+- **Seed data in Neon:** 1 coach + 2 students (Ella, Nathan)
+- **GitHub:** https://github.com/LesterYKTam/mathCoach (commit: ae1be70)
 
 ---
 
 ## Blockers / Open Issues
 
-- Prisma 7 adapter: pass `{ url }` config to `PrismaBetterSqlite3`, not a Database instance.
-- preview_* tools crash on this machine; use curl + background task logs to verify.
+- `preview_*` tools crash on this machine; use `curl` + background task logs to verify.
+- 27 npm audit vulnerabilities (8 moderate, 19 high) — from dev deps (eslint, etc.). Not urgent.

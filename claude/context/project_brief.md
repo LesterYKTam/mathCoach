@@ -1,6 +1,6 @@
 # Math Coach — Project Brief
 
-_Last updated: 2026-02-22_
+_Last updated: 2026-02-23_
 
 ---
 
@@ -181,7 +181,7 @@ Full app structure with all flows (coach, student, reports), but **only one task
 
 - **Platform**: iPad-friendly web app (responsive, touch-optimized)
 - **No authentication**: profile-picker model (like Netflix)
-- **Offline-capable preferred**: local data storage
+- **Cloud-hosted**: Neon PostgreSQL (production) + optional local Docker Postgres (dev)
 - **Printable**: worksheets should be print-friendly (browser print)
 
 ---
@@ -216,3 +216,5 @@ _All resolved — none pending._
 | 2026-02-21 | Deactivated tasks hidden from task list, visible in reports | Keeps UI clean while preserving full history |
 | 2026-02-21 | Phase 1 scope: 1×1 multiplication only | Delivers full app structure with bounded, testable content |
 | 2026-02-21 | Multiplication grid UI modelled on math-aids.com Advanced Times Tables Drill | Proven UX for fact selection |
+| 2026-02-23 | Migrate DB from SQLite → Neon (serverless PostgreSQL) | Cloud-hosted DB required for Vercel serverless deploy |
+| 2026-02-23 | Deploy to Vercel + Neon; git push = auto-deploy | Matches aicoach project pattern; zero-config deploys |
