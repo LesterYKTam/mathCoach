@@ -4,6 +4,16 @@ An iPad-friendly web app for daily math drill practice, inspired by the Kumon me
 
 ---
 
+## About This Project
+
+> **This project is a proof of concept for AI-assisted software development.**
+>
+> The owner wrote **zero lines of code**. Every line of application code, database schema, tests, configuration, and deployment setup was written entirely by **[Claude Code](https://claude.ai/code)** (Anthropic's AI coding agent) through natural language conversations.
+>
+> The goal was to explore how far an AI coding agent can take a real-world project — from blank canvas to a fully deployed, production-ready web app — with a non-developer acting purely as the product owner: describing requirements, reviewing decisions, and approving changes.
+
+---
+
 ## Features
 
 - **Profile picker** — Netflix-style, no login required
