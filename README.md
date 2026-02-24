@@ -2,6 +2,8 @@
 
 An iPad-friendly web app for daily math drill practice, inspired by the Kumon method. Coaches (parents/teachers) create and assign structured drill tasks to students. Every attempt is recorded and visualised in a progress report.
 
+🌐 **Live demo:** [https://math-coach-nu.vercel.app/](https://math-coach-nu.vercel.app/)
+
 ---
 
 ## About This Project
